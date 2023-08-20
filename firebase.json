@@ -26,5 +26,12 @@
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }
+  ],
+  "hosting": [
+    {
+      "target": "palm-api-app",
+      "source": ".",
+      "frameworksBackend": {}
+    }
   ]
 }
