@@ -12,11 +12,15 @@ import { addDoc, doc } from '@firebase/firestore';
       <input type="text" name="prompt" #promptText>
       <button (click)="submitPrompt($event, promptText)">Submit</button>
       <hr />
-      <p>{{status}}</p>
+      <p>{{status}}<span class="error">{{errorMsg}}</span></p>
       {{response}}
     </form>
   `,
-  styleUrls: ['./app.component.css'],
+  styles: [
+    `{
+      color: red;
+    }`
+  ],
   imports: []
 })
 export class AppComponent {
@@ -26,6 +30,7 @@ export class AppComponent {
   response = '';
   prompt = '';
   status = '';
+  errorMsg = '';
 
   async submitPrompt(event: Event, promptText: HTMLInputElement) {
     event.preventDefault();
@@ -33,6 +38,7 @@ export class AppComponent {
     if (!promptText.value) return;
     this.prompt = promptText.value;
     promptText.value = '';
+    this.response = '';
 
     this.status = 'sure, one sec';
     const discussionDoc = await addDoc(this.discussionCollection, { prompt: this.prompt });
@@ -42,13 +48,29 @@ export class AppComponent {
         const conversation = snap.data();
         if (conversation && conversation['status']) {
           this.status = 'thinking...';
-          if (conversation['status']['state'] === 'COMPLETED') {
-            this.status = 'here you go!';
-            this.response = conversation['response'];
-            destroyFn();
+          const state = conversation['status']['state'];
+
+          switch(state) {
+            case 'COMPLETED':
+              this.status = 'here you go!';
+              this.response = conversation['response'];
+              destroyFn();  
+              break;
+            case 'PROCESSING':
+              this.status = 'preparing your answer...';
+              break;
+            case 'ERRORED':
+              this.status = 'Oh no! Something went wrong. Please try again.';
+              destroyFn();
+              break;
           }
         }
       },
+      error: err => {
+        console.log(err);
+        this.errorMsg = err.message;
+        destroyFn();
+      }
     })
   }
 }
