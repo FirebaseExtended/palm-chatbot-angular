@@ -1,36 +1,84 @@
+import { NgClass, NgFor } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Firestore, collection, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { addDoc, doc } from '@firebase/firestore';
+
+interface DisplayMessage {
+  text: string;
+  type: 'PROMPT' | 'RESPONSE';
+}
 
 @Component({
   standalone: true,
   selector: 'app-root',
   template: `
-    <h1>Palm API demo</h1>
-    <form>
-      <label for="prompt"><p>Please enter a prompt:</p></label>
-      <input type="text" name="prompt" #promptText>
-      <button (click)="submitPrompt($event, promptText)">Submit</button>
-      <hr />
-      <p>{{status}}<span class="error">{{errorMsg}}</span></p>
-      {{response}}
-    </form>
+    <header>
+      <h1>Palm API 🤝 Angular</h1>
+    </header>
+    <section class="conversation-window">
+      <section class="responses">
+        <p class="response">I'm chatbot powered by the Palm API Firebase Extension and built with Angular.</p>
+        <ng-container *ngFor="let resp of responses">
+          <p [ngClass]="resp.type == 'PROMPT' ? 'prompt' : 'response'">{{ resp.text }}</p>
+        </ng-container>
+      </section>
+      <section class="prompt-area">
+        <form>
+          <label for="prompt"><p>Please enter a prompt:</p></label>
+          <input type="text" name="prompt" #promptText placeholder="Enter a prompt here">
+          <button (click)="submitPrompt($event, promptText)">Send</button>
+        </form>
+        <p>{{ status }}</p>
+      </section>
+    </section>
   `,
   styles: [
-    `{
-      color: red;
-    }`
+    `
+      header > h1 {
+        font-size: 20pt;
+      }
+      header {
+        margin-bottom: 15px;
+      }
+      .prompt, .response {
+        padding: 20px;
+      }
+      .prompt {
+        /* background: #f3f6fc; */
+      }
+      .response {
+        background: white;
+        border-radius: 10px;
+        border: solid 5px white;
+      }
+      .responses {
+        border-radius: 10px;
+        margin-bottom: 15px;
+      }
+      .prompt-area {
+        border-radius: 10px;
+      }
+      .conversation-window {
+        padding: 20px;
+        background: #f3f6fc;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: calc(100vh - 150px);
+      }
+    `
   ],
-  imports: []
+  imports: [NgFor, NgClass]
 })
 export class AppComponent {
   private readonly firestore: Firestore = inject(Firestore);
   private readonly discussionCollection = collection(this.firestore, 'discussions');
   title = 'palm-api-app';
-  response = '';
   prompt = '';
   status = '';
   errorMsg = '';
+  responses: DisplayMessage[] = [];
 
   async submitPrompt(event: Event, promptText: HTMLInputElement) {
     event.preventDefault();
@@ -38,7 +86,10 @@ export class AppComponent {
     if (!promptText.value) return;
     this.prompt = promptText.value;
     promptText.value = '';
-    this.response = '';
+    this.responses.push({
+      text: this.prompt,
+      type: 'PROMPT',
+    });
 
     this.status = 'sure, one sec';
     const discussionDoc = await addDoc(this.discussionCollection, { prompt: this.prompt });
@@ -50,11 +101,14 @@ export class AppComponent {
           this.status = 'thinking...';
           const state = conversation['status']['state'];
 
-          switch(state) {
+          switch (state) {
             case 'COMPLETED':
               this.status = 'here you go!';
-              this.response = conversation['response'];
-              destroyFn();  
+              this.responses.push({
+                text: conversation['response'],
+                type: 'RESPONSE',
+              });
+              destroyFn();
               break;
             case 'PROCESSING':
               this.status = 'preparing your answer...';
