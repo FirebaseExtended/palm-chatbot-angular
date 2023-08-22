@@ -53,6 +53,9 @@ interface DisplayMessage {
   `,
   styles: [
     `
+      .prompt-controls {
+        display: flex;
+      }
       header > h1 {
         font-size: 20pt;
       }
