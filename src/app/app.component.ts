@@ -1,4 +1,4 @@
-import { NgClass, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Firestore, collection, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { addDoc, doc } from '@firebase/firestore';
@@ -13,22 +13,41 @@ interface DisplayMessage {
   selector: 'app-root',
   template: `
     <header>
-      <h1>Palm API 🤝 Angular</h1>
+      <h1>Firebase 🤝 Palm API 🤝 Angular</h1>
     </header>
     <section class="conversation-window">
       <section class="responses">
-        <p class="response">I'm chatbot powered by the Palm API Firebase Extension and built with Angular.</p>
         <ng-container *ngFor="let resp of responses">
-          <p [ngClass]="resp.type == 'PROMPT' ? 'prompt' : 'response'">{{ resp.text }}</p>
+          <div [ngClass]="resp.type == 'PROMPT' ? 'prompt' : 'response'">
+            <img
+              *ngIf="resp.type != 'PROMPT'"
+              class="chatbot-logo"
+              src="/assets/firestore-palm-chatbot-logo.png"
+            />
+            <p>{{ resp.text }}</p>
+          </div>
         </ng-container>
       </section>
       <section class="prompt-area">
-        <form>
-          <label for="prompt"><p>Please enter a prompt:</p></label>
-          <input type="text" name="prompt" #promptText placeholder="Enter a prompt here">
-          <button (click)="submitPrompt($event, promptText)">Send</button>
+        <form *ngIf="!status" class="prompt-form">
+          <input
+            autofocus
+            class="prompt-input"
+            type="text"
+            name="prompt"
+            #promptText
+            placeholder="Enter a prompt here"
+          />
+          <button
+            class="prompt-send-button"
+            (click)="submitPrompt($event, promptText)"
+          >
+            Send
+          </button>
         </form>
+        <div *ngIf="status" class="status-indicator">
         <p>{{ status }}</p>
+        </div>
       </section>
     </section>
   `,
@@ -42,21 +61,51 @@ interface DisplayMessage {
       }
       .prompt, .response {
         padding: 20px;
+        max-width: 80%;
+        border-radius: 10px;
+        border: solid 5px white;
+        margin-bottom: 10px;
+        line-height: 1.5;
       }
       .prompt {
-        /* background: #f3f6fc; */
+        margin-left: auto;
       }
       .response {
         background: white;
-        border-radius: 10px;
-        border: solid 5px white;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
       }
       .responses {
         border-radius: 10px;
         margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-y: scroll;
       }
       .prompt-area {
         border-radius: 10px;
+      }
+      .prompt-form {
+        display: flex;
+        flex-flow: row nowrap;
+      }
+      .prompt-input {
+        flex-grow: 9;
+        margin-right: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        border: none;
+      }
+      .prompt-send-button {
+        flex-grow: 0;
+        flex-shrink: 0;
+        border-radius: 50%;
+        height: 56px;
+        width: 56px;
+        border: 2px solid black;
       }
       .conversation-window {
         padding: 20px;
@@ -67,9 +116,19 @@ interface DisplayMessage {
         justify-content: space-between;
         height: calc(100vh - 150px);
       }
-    `
+      .chatbot-logo {
+        height: 56px;
+        width: 56px;
+        margin-right: 20px;
+      }
+      .status-indicator {
+        padding: 20px;
+        display: flex;
+        justify-content: space-evenly
+      }
+    `,
   ],
-  imports: [NgFor, NgClass]
+  imports: [NgFor, NgClass, NgIf],
 })
 export class AppComponent {
   private readonly firestore: Firestore = inject(Firestore);
@@ -78,7 +137,12 @@ export class AppComponent {
   prompt = '';
   status = '';
   errorMsg = '';
-  responses: DisplayMessage[] = [];
+  responses: DisplayMessage[] = [
+    {
+      text: "I'm a chatbot powered by the Palm API Firebase Extension and built with Angular.",
+      type: 'RESPONSE' 
+    }
+  ];
 
   async submitPrompt(event: Event, promptText: HTMLInputElement) {
     event.preventDefault();
@@ -103,7 +167,7 @@ export class AppComponent {
 
           switch (state) {
             case 'COMPLETED':
-              this.status = 'here you go!';
+              this.status = '';
               this.responses.push({
                 text: conversation['response'],
                 type: 'RESPONSE',
