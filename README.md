@@ -1,6 +1,15 @@
 # PalmApiApp
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.7.
+A demo app to show how to use Firebase, Angular, and the PaLM API to create a customizable chat bot.
+
+## Get started
+
+1. [Create a Firebase project](https://firebase.google.com/docs/web/setup#create-project)
+1. In the Firebase console, enable Cloud Firestore
+1. [Register a new web app](https://firebase.google.com/docs/web/setup#register-app)
+1. Add the web app config object from the Firebase console in `src/environments/environment.ts` and `src/environments/environment.development.ts`
+1. `npm install`
+1. Start the development server
 
 ## Development server
 
