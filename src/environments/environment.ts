@@ -1,9 +1,10 @@
-export const environment = {
-  firebase: {
-    projectId: 'palm-api-demo-app',
-    appId: '1:871887126131:web:072b787161477eb6cf7406',
-    storageBucket: 'palm-api-demo-app.appspot.com',
-    apiKey: 'AIzaSyC1-y7HamtIvm5OBYiSU1P75tIBz7Blkp0',
-    authDomain: 'palm-api-demo-app.firebaseapp.com',
-    messagingSenderId: '871887126131',
-  },};
+import { FirebaseOptions } from '@angular/fire/app';
+
+const prodFirebaseConfig = {
+  // Add the Firebase config object for your web app here
+  // https://support.google.com/firebase/answer/7015592?hl=en#web&zippy=%2Cin-this-article
+};
+
+export const environment: { firebase: FirebaseOptions } = {
+  firebase: prodFirebaseConfig,
+};
