@@ -1,4 +1,4 @@
-# PalmApiApp
+# Demo: PaLM Chatbot with Angular
 
 A demo app to show how to use Firebase, Angular, and the PaLM API to create a customizable chat bot.
 
@@ -15,10 +15,6 @@ A demo app to show how to use Firebase, Angular, and the PaLM API to create a cu
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
 ## Build
 
