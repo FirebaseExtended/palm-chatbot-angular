@@ -107,3 +107,6 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# Local config telling the Firebase CLI which firebase project to deploy to
+.firebaserc
